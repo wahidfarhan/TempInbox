@@ -6,6 +6,8 @@
 [![License](https://img.shields.io/badge/License-MIT-yellow)](LICENSE)
 [![No Composer](https://img.shields.io/badge/Dependencies-Zero-brightgreen)](/)
 
+![TempInbox Dashboard](pic.png)
+
 TempInbox is a production-ready, open-source temporary email service written in **PHP 8.3+** and **SQLite**. It connects to a catch-all IMAP mailbox, pulls emails in real-time, and serves them through a premium dark-mode Bootstrap 5 dashboard. Supports outbound email sending, threaded replies, browser notifications, and a full admin panel.
 
 > **Zero external dependencies.** No Composer required. Works on standard **cPanel shared hosting** out of the box.
