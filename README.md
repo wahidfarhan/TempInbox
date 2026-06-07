@@ -29,7 +29,7 @@ TempInbox is a production-ready, open-source temporary email service written in 
 
 | Requirement | Minimum |
 |---|---|
-| PHP | **8.3 or higher** |
+| PHP | **8.1 or higher** |
 | PHP Extensions | `imap`, `pdo_sqlite`, `openssl`, `mbstring` |
 | Web Server | Apache (with `mod_rewrite`) or Nginx |
 | Hosting | cPanel shared hosting, VPS, or local XAMPP/LAMP |
@@ -190,21 +190,21 @@ The cron job polls your IMAP inbox every minute to fetch new emails.
 
 1. cPanel → **Advanced → Cron Jobs**
 2. Set the following:
-   - **Schedule:** `* * * * *` (Every Minute)
-   - **Command:**
-     ```bash
-     /usr/local/bin/ea-php83 /home/username/public_html/TempInbox/cron/cron.php >/dev/null 2>&1
-     ```
+    - **Schedule:** `* * * * *` (Every Minute)
+    - **Command:**
+      ```bash
+      /usr/local/bin/ea-php81 /home/username/public_html/TempInbox/cron/cron.php >/dev/null 2>&1
+      ```
 3. Click **Add New Cron Job**
 
 > Replace `/home/username/` with the real path to your cPanel home directory.
 
-**Common PHP 8.3 binary paths:**
+**Common PHP binary paths:**
 
 | Server Type | Binary Path |
 |---|---|
-| EasyApache 4 (standard cPanel) | `/usr/local/bin/ea-php83` |
-| CloudLinux Alt-PHP | `/opt/alt/php83/usr/bin/php` |
+| EasyApache 4 (standard cPanel) | `/usr/local/bin/ea-php81` |
+| CloudLinux Alt-PHP | `/opt/alt/php81/usr/bin/php` |
 | Generic Linux / VPS | `/usr/bin/php` or `/usr/local/bin/php` |
 
 > If unsure, check **cPanel → MultiPHP Manager** or ask your hosting provider.
@@ -276,10 +276,10 @@ Run these commands via SSH to verify your setup before going live:
 
 ```bash
 # Test IMAP connection and database integrity
-/usr/local/bin/ea-php83 /home/username/public_html/TempInbox/tests/test_imap.php
+/usr/local/bin/ea-php81 /home/username/public_html/TempInbox/tests/test_imap.php
 
 # Test SMTP connection and authentication
-/usr/local/bin/ea-php83 /home/username/public_html/TempInbox/tests/test_smtp.php
+/usr/local/bin/ea-php81 /home/username/public_html/TempInbox/tests/test_smtp.php
 ```
 
 **Successful output looks like:**

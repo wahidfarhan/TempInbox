@@ -4,8 +4,8 @@
  */
 
 // Check PHP Version
-if (PHP_VERSION_ID < 80300) {
-    die("TempInbox requires PHP 8.3 or higher. Current version: " . PHP_VERSION);
+if (PHP_VERSION_ID < 80100) {
+    die("TempInbox requires PHP 8.1 or higher. Current version: " . PHP_VERSION);
 }
 
 // Check required PHP extensions
