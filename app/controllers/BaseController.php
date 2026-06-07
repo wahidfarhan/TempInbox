@@ -14,9 +14,31 @@ abstract class BaseController
 
     public function __construct()
     {
-        // Start session if not already started
+        // Start session with security configuration
         if (session_status() === PHP_SESSION_NONE) {
+            // Configure session security
+            $isSecure = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || 
+                        (!empty($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https') ||
+                        (!empty($_SERVER['SERVER_PORT']) && $_SERVER['SERVER_PORT'] == 443);
+            
+            $sessionConfig = [
+                'lifetime' => 86400, // 24 hours
+                'path' => '/',
+                'domain' => '',
+                'secure' => $isSecure,        // Only send over HTTPS
+                'httponly' => true,           // Prevent JavaScript access
+                'samesite' => 'Strict'        // CSRF protection
+            ];
+            session_set_cookie_params($sessionConfig);
             session_start();
+            
+            // Regenerate session ID periodically (every 1 hour)
+            if (empty($_SESSION['created_at'])) {
+                $_SESSION['created_at'] = time();
+            } elseif (time() - $_SESSION['created_at'] > 3600) {
+                session_regenerate_id(true);
+                $_SESSION['created_at'] = time();
+            }
         }
 
         // Initialize CSRF Token
@@ -24,10 +46,12 @@ abstract class BaseController
             $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
         }
 
-        // Apply basic security headers
+        // Apply security headers
         header("X-Content-Type-Options: nosniff");
         header("X-XSS-Protection: 1; mode=block");
         header("Referrer-Policy: same-origin");
+        header("X-Frame-Options: SAMEORIGIN");
+        header("Strict-Transport-Security: max-age=31536000; includeSubDomains; preload");
 
         // Resolve dynamic base URL to ensure zero configuration works out-of-the-box
         $config = require ROOT_DIR . '/config/config.php';

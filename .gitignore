@@ -29,5 +29,11 @@ composer.lock
 .env.local
 .env.*.local
 
+# Configuration files with sensitive credentials — NEVER commit these!
+/config/config.php
+/config/config.local.php
+config.php
+config.local.php
+
 # Windows-specific
 ehthumbs.db

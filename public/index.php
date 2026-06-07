@@ -3,6 +3,24 @@
  * TempInbox Front Controller & Router
  */
 
+// Check PHP Version
+if (PHP_VERSION_ID < 80300) {
+    die("TempInbox requires PHP 8.3 or higher. Current version: " . PHP_VERSION);
+}
+
+// Check required PHP extensions
+$requiredExtensions = ['imap', 'pdo_sqlite', 'openssl', 'mbstring'];
+$missingExtensions = [];
+foreach ($requiredExtensions as $ext) {
+    if (!extension_loaded($ext)) {
+        $missingExtensions[] = $ext;
+    }
+}
+if (!empty($missingExtensions)) {
+    die("Missing required PHP extensions: " . implode(', ', $missingExtensions) . 
+        "\nPlease install them and restart your web server.");
+}
+
 // Define execution constants
 define('PUBLIC_DIR', __DIR__);
 

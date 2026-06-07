@@ -31,7 +31,20 @@ class SmtpService
         $this->encryption = Setting::get('smtp_encryption', $config['smtp']['encryption'] ?? 'tls');
         
         $this->username = Setting::get('smtp_username', $config['smtp']['username'] ?? $config['imap']['username'] ?? '');
-        $this->password = Setting::get('smtp_password', $config['smtp']['password'] ?? $config['imap']['password'] ?? '');
+        
+        // Get SMTP password and decrypt if needed
+        $storedPassword = Setting::get('smtp_password', $config['smtp']['password'] ?? $config['imap']['password'] ?? '');
+        try {
+            // Try to decrypt if it looks like encrypted data (base64)
+            if (!empty($storedPassword) && preg_match('/^[A-Za-z0-9+\/]*={0,2}$/', $storedPassword)) {
+                $this->password = EncryptionService::decrypt($storedPassword);
+            } else {
+                $this->password = $storedPassword; // Fallback for plaintext (migration support)
+            }
+        } catch (\Exception $e) {
+            Log::warning("Failed to decrypt SMTP password, using as plaintext: " . $e->getMessage());
+            $this->password = $storedPassword;
+        }
     }
 
     /**

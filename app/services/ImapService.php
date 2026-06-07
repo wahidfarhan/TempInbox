@@ -17,13 +17,18 @@ class ImapService
 
     public function __construct()
     {
+        // Check if IMAP extension is loaded
+        if (!extension_loaded('imap')) {
+            throw new Exception("PHP IMAP extension is not installed. Please install it and restart your web server.");
+        }
+        
         $allConfig = require ROOT_DIR . '/config/config.php';
         $this->config = $allConfig['imap'];
     }
 
-    /**
-     * Establish IMAP Connection
-     */
+     /**
+      * Establish IMAP Connection
+      */
     public function connect(): bool
     {
         if ($this->stream !== null) {
@@ -33,6 +38,16 @@ class ImapService
         $connectionString = $this->getConnectionString();
         $username = $this->config['username'];
         $password = $this->config['password'];
+        
+        // Try to decrypt password if it's encrypted
+        try {
+            if (!empty($password) && preg_match('/^[A-Za-z0-9+\/]*={0,2}$/', $password)) {
+                $password = EncryptionService::decrypt($password);
+            }
+        } catch (Exception $e) {
+            // If decryption fails, use password as-is (might be plaintext from config)
+            \App\Models\Log::warning("Could not decrypt IMAP password: " . $e->getMessage());
+        }
 
         // Suppress warnings because imap_open throws notice/warnings on connection failures
         $this->stream = @imap_open($connectionString, $username, $password);

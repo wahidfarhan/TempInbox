@@ -7,6 +7,7 @@ use App\Models\Message;
 use App\Models\Setting;
 use App\Models\Log;
 use App\Services\Database;
+use App\Services\EncryptionService;
 
 /**
  * Admin Controller
@@ -45,23 +46,30 @@ class AdminController extends BaseController
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $this->verifyCsrf();
             
-            $username = $this->input('username');
-            $password = $this->input('password');
-
-            $dbUsername = Setting::get('admin_username', 'admin');
-            $dbPasswordHash = Setting::get('admin_password');
-
-            if ($username === $dbUsername && password_verify($password, $dbPasswordHash)) {
-                // Login successful
-                $_SESSION['admin_logged_in'] = true;
-                $_SESSION['admin_user'] = $username;
-                $_SESSION['login_time'] = time();
-                
-                Log::info("Admin user logged in from IP " . \App\Services\RateLimiter::getClientIp());
-                $this->redirect('/admin');
+            // Rate limit admin login attempts
+            $clientIp = \App\Services\RateLimiter::getClientIp();
+            if (!\App\Services\RateLimiter::check('admin_login_' . $clientIp, 5, 300)) { // 5 attempts per 5 minutes
+                Log::warning("Admin login rate limit exceeded from IP $clientIp");
+                $error = "Too many login attempts. Please try again in a few minutes.";
             } else {
-                $error = "Invalid username or password.";
-                Log::warning("Failed admin login attempt from IP " . \App\Services\RateLimiter::getClientIp());
+                $username = $this->input('username');
+                $password = $this->input('password');
+
+                $dbUsername = Setting::get('admin_username', 'admin');
+                $dbPasswordHash = Setting::get('admin_password');
+
+                if ($username === $dbUsername && password_verify($password, $dbPasswordHash)) {
+                    // Login successful
+                    $_SESSION['admin_logged_in'] = true;
+                    $_SESSION['admin_user'] = $username;
+                    $_SESSION['login_time'] = time();
+                    
+                    Log::info("Admin user logged in from IP $clientIp");
+                    $this->redirect('/admin');
+                } else {
+                    $error = "Invalid username or password.";
+                    Log::warning("Failed admin login attempt from IP $clientIp");
+                }
             }
         }
 
@@ -189,6 +197,15 @@ class AdminController extends BaseController
             $this->redirect('/admin');
         }
 
+        // Validate domain format
+        $domainRegex = '/^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,}$/i';
+        foreach ($domains as $domain) {
+            if (!preg_match($domainRegex, $domain)) {
+                $_SESSION['flash_error'] = "Invalid domain format: $domain. Please use valid domain names (e.g. example.com).";
+                $this->redirect('/admin');
+            }
+        }
+
         if ($defaultExpiry <= 0) {
             $_SESSION['flash_error'] = "Default expiration hours must be positive.";
             $this->redirect('/admin');
@@ -204,8 +221,17 @@ class AdminController extends BaseController
         Setting::set('smtp_port', (string)$smtpPort);
         Setting::set('smtp_encryption', $smtpEncryption);
         Setting::set('smtp_username', $smtpUsername);
+        
+        // Encrypt SMTP password before storing
         if (!empty($smtpPassword) || empty($smtpHost)) {
-            Setting::set('smtp_password', $smtpPassword);
+            try {
+                $encryptedPassword = EncryptionService::encrypt($smtpPassword);
+                Setting::set('smtp_password', $encryptedPassword);
+            } catch (\Exception $e) {
+                $_SESSION['flash_error'] = "Failed to encrypt SMTP password.";
+                Log::error("SMTP password encryption error: " . $e->getMessage());
+                $this->redirect('/admin');
+            }
         }
         
         if (!empty($adminUsername)) {

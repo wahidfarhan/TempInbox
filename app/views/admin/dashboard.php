@@ -286,8 +286,8 @@
                                 </div>
                                 <div class="col-md-2">
                                     <div class="mb-3">
-                                        <label for="smtp_password" class="form-label text-muted small">SMTP Password</label>
-                                        <input type="password" class="form-control" id="smtp_password" name="smtp_password" value="<?= htmlspecialchars($smtp_password ?? '') ?>" placeholder="Password">
+                                         <label for="smtp_password" class="form-label text-muted small">SMTP Password</label>
+                                         <input type="password" class="form-control" id="smtp_password" name="smtp_password" value="" placeholder="Leave empty to keep current password">
                                     </div>
                                 </div>
                             </div>
