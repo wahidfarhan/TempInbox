@@ -1,0 +1,21 @@
+# TempInbox Rewrite Rules for Clean URLs
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteRule ^(.*)$ index.php [L,QSA]
+</IfModule>
+
+# Protect SQLite database from direct browser downloads if stored inside public folder by accident
+<Files ~ "\.(sqlite|db|sql|log|ini|sh|yml)$">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order deny,allow
+        Deny from all
+    </IfModule>
+</Files>
+
+# Disable directory listing
+Options -Indexes

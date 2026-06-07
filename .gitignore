@@ -1,0 +1,33 @@
+# Logs of all kinds
+*.log
+/storage/logs/
+
+# SQLite database — contains real user data, never commit this
+/storage/database.sqlite
+/storage/*.sqlite
+/storage/*.db
+
+# Keep the storage directory tracked but ignore its contents
+!/storage/.gitignore
+
+# OS-generated files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# PHP environment / composer (not used, but just in case)
+vendor/
+composer.lock
+.env
+.env.local
+.env.*.local
+
+# Windows-specific
+ehthumbs.db
